@@ -2,12 +2,13 @@ import Head from "next/head";
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import type { NextPage } from "next";
-import { Container, Card, Text, Button, Input, Grid, useInput, Spacer } from "@nextui-org/react";
+import { Container, Card, Text, Button, Input, Grid, useInput, Spacer, Loading } from "@nextui-org/react";
 import styles from "../styles/Home.module.css";
 import { AUDIO_EXT, isValidURL } from "../utils";
 
 const Home: NextPage = () => {
   const [mp3, setMp3] = useState<Blob>();
+  const [loading, setLoading] = useState<Boolean>(false);
   const { value, reset, bindings } = useInput("");
 
   const helper: {
@@ -27,9 +28,11 @@ const Home: NextPage = () => {
   }, [value]);
 
   const getMp3File = async (url: string) => {
-    const respData = await (await fetch(`/api/v1?url=${url.trim()}`)).blob();
-    setMp3(respData);
     reset();
+    setMp3(undefined);
+    setLoading(true);
+    setMp3(await (await fetch(`/api/v1?url=${url.trim()}`)).blob());
+    setLoading(false);
   }
 
   const downloadMp3File = (blob: Blob) => {
@@ -109,27 +112,28 @@ const Home: NextPage = () => {
             </Grid.Container>
           </Card.Body>
           <Card.Footer>
-            {mp3 && <Grid.Container>
+            <Grid.Container>
               <Grid xs={5.5}></Grid>
               <Grid xs={1}>
-                <Button
-                  flat
-                  auto
-                  rounded
-                  color="primary"
-                  onPress={() => mp3 && downloadMp3File(mp3)}>
-                  <Text
-                    css={{ color: "inherit" }}
-                    size={12}
-                    weight="bold"
-                    transform="uppercase"
-                  >
-                    Download
-                  </Text>
-                </Button>
+                {loading ? <><Spacer x={2} /><Loading color="primary" /></> :
+                  <Button
+                    flat
+                    auto
+                    rounded
+                    color="primary"
+                    onPress={() => mp3 && downloadMp3File(mp3)}>
+                    <Text
+                      css={{ color: "inherit" }}
+                      size={12}
+                      weight="bold"
+                      transform="uppercase"
+                    >
+                      Download
+                    </Text>
+                  </Button>}
               </Grid>
               <Grid xs={5.5}></Grid>
-            </Grid.Container>}
+            </Grid.Container>
           </Card.Footer>
         </Card>
       </Container>

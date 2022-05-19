@@ -34,3 +34,5 @@ package-lock.log*
 
 # typescript
 *.tsbuildinfo
+
+/temp
